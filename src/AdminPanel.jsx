@@ -31,6 +31,14 @@ function AdminPanel() {
       card: '#ffffff',
       text: '#1f2937' // gray-800
     },
+    // การตั้งค่าหน้า
+    pages: {
+      showVerificationPage: true,
+      showEmailLoginPage: true,
+      showFormPage: true,
+      showQRPage: true,
+      pageOrder: ['verification', 'emailLogin', 'form', 'qr']
+    },
     // การตั้งค่าอื่นๆ
     settings: {
       verificationCodeLength: 4,
@@ -81,6 +89,23 @@ function AdminPanel() {
         [key]: value
       }
     }))
+  }
+
+  // ฟังก์ชันอัปเดตการตั้งค่าหน้า
+  const updatePageSetting = (key, value) => {
+    setConfig(prev => ({
+      ...prev,
+      pages: {
+        ...prev.pages,
+        [key]: value
+      }
+    }))
+  }
+
+  // ฟังก์ชันบันทึกการตั้งค่าหน้า
+  const savePageSettings = () => {
+    localStorage.setItem('pageSettings', JSON.stringify(config.pages))
+    alert('บันทึกการตั้งค่าเรียบร้อยแล้ว!')
   }
 
   const exportConfig = () => {
@@ -183,28 +208,27 @@ function AdminPanel() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="dashboard" className="space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">        <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
-              <Settings className="h-4 w-4" />
-              <span>หน้าหลัก</span>
+              <Settings className="w-4 h-4" />
+              <span>Dashboard</span>
             </TabsTrigger>
             <TabsTrigger value="content" className="flex items-center space-x-2">
-              <FileText className="h-4 w-4" />
+              <FileText className="w-4 h-4" />
               <span>แก้ไขเนื้อหา</span>
             </TabsTrigger>
             <TabsTrigger value="theme" className="flex items-center space-x-2">
-              <Palette className="h-4 w-4" />
+              <Palette className="w-4 h-4" />
               <span>ธีมและสี</span>
             </TabsTrigger>
             <TabsTrigger value="data" className="flex items-center space-x-2">
-              <Database className="h-4 w-4" />
+              <Database className="w-4 h-4" />
               <span>ข้อมูลฟอร์ม</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center space-x-2">
-              <Settings className="h-4 w-4" />
-              <span>ตั้งค่า</span>
+              <Eye className="w-4 h-4" />
+              <span>จัดการหน้า</span>
             </TabsTrigger>
           </TabsList>
 
@@ -766,15 +790,170 @@ function AdminPanel() {
             </Card>
           </TabsContent>
 
-          {/* Settings Tab - จะเพิ่มในขั้นตอนถัดไป */}
-          <TabsContent value="settings">
+          {/* Settings Tab - จัดการหน้า */}
+          <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>ตั้งค่าระบบ</CardTitle>
-                <p className="text-gray-600">ตั้งค่าต่างๆ ของระบบ</p>
+                <CardTitle>จัดการหน้า</CardTitle>
+                <p className="text-gray-600">เปิด/ปิดหน้าต่างๆ และจัดลำดับการแสดงผล</p>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-500">กำลังพัฒนา...</p>
+              <CardContent className="space-y-6">
+                {/* การเปิด/ปิดหน้า */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">หน้าที่จะแสดง</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">หน้ารหัสยืนยันตัวตน</h4>
+                            <p className="text-sm text-gray-600">แสดงรหัส 4 หลักพร้อมตัวนับเวลา</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer" 
+                              defaultChecked={true}
+                              onChange={(e) => updatePageSetting('showVerificationPage', e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">หน้าล็อกอินด้วยอีเมล</h4>
+                            <p className="text-sm text-gray-600">ฟอร์มกรอกอีเมลและรหัสผ่าน</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer" 
+                              defaultChecked={true}
+                              onChange={(e) => updatePageSetting('showEmailLoginPage', e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">หน้าฟอร์มข้อมูล</h4>
+                            <p className="text-sm text-gray-600">ฟอร์มกรอกชื่อ-นามสกุล</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer" 
+                              defaultChecked={true}
+                              onChange={(e) => updatePageSetting('showFormPage', e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">หน้า QR Code</h4>
+                            <p className="text-sm text-gray-600">แสดง QR Code สำหรับสแกน</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer" 
+                              defaultChecked={true}
+                              onChange={(e) => updatePageSetting('showQRPage', e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* ลำดับการแสดงหน้า */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">ลำดับการแสดงหน้า</h3>
+                  <p className="text-sm text-gray-600">ลากเพื่อเปลี่ยนลำดับการแสดงหน้า</p>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-blue-500 text-white rounded flex items-center justify-center text-sm font-bold">1</div>
+                        <span className="font-medium">หน้ารหัสยืนยันตัวตน</span>
+                      </div>
+                      <div className="ml-auto text-gray-400">⋮⋮</div>
+                    </div>
+                    
+                    <div className="flex items-center p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-green-500 text-white rounded flex items-center justify-center text-sm font-bold">2</div>
+                        <span className="font-medium">หน้าล็อกอินด้วยอีเมล</span>
+                      </div>
+                      <div className="ml-auto text-gray-400">⋮⋮</div>
+                    </div>
+                    
+                    <div className="flex items-center p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-purple-500 text-white rounded flex items-center justify-center text-sm font-bold">3</div>
+                        <span className="font-medium">หน้าฟอร์มข้อมูล</span>
+                      </div>
+                      <div className="ml-auto text-gray-400">⋮⋮</div>
+                    </div>
+                    
+                    <div className="flex items-center p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-red-500 text-white rounded flex items-center justify-center text-sm font-bold">4</div>
+                        <span className="font-medium">หน้า QR Code</span>
+                      </div>
+                      <div className="ml-auto text-gray-400">⋮⋮</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ตัวอย่างการทำงาน */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">ตัวอย่างการทำงาน</h3>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600 space-y-2">
+                        <p><strong>หน้าที่เปิดใช้งาน:</strong> หน้ารหัสยืนยัน → หน้าอีเมล → หน้าฟอร์ม → หน้า QR</p>
+                        <p><strong>การทำงาน:</strong> ผู้ใช้จะเห็นหน้าตามลำดับที่กำหนด หากปิดหน้าใดหน้าหนึ่ง ระบบจะข้ามไปหน้าถัดไป</p>
+                        <p><strong>ตัวอย่าง:</strong> หากปิดหน้าอีเมล ผู้ใช้จะไปจากหน้ารหัสยืนยันตรงไปหน้าฟอร์มทันที</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* ปุ่มบันทึก */}
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={savePageSettings}
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    บันทึกการตั้งค่า
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.open('/', '_blank')}
+                  >
+                    ดูตัวอย่าง
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
