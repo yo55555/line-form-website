@@ -17,15 +17,50 @@ function App() {
   
   // ตั้งค่าหน้าที่จะแสดง (จาก Admin Panel)
   const [pageSettings, setPageSettings] = useState(() => {
-    const saved = localStorage.getItem('pageSettings')
-    return saved ? JSON.parse(saved) : {
-      showVerificationPage: true,
-      showEmailLoginPage: true,
-      showFormPage: true,
-      showQRPage: true,
-      pageOrder: ['verification', 'emailLogin', 'form', 'qr']
+    try {
+      const saved = localStorage.getItem('pageSettings')
+      return saved ? JSON.parse(saved) : {
+        showVerificationPage: true,
+        showEmailLoginPage: true,
+        showFormPage: true,
+        showQRPage: true,
+        pageOrder: ['verification', 'emailLogin', 'form', 'qr']
+      }
+    } catch (error) {
+      return {
+        showVerificationPage: true,
+        showEmailLoginPage: true,
+        showFormPage: true,
+        showQRPage: true,
+        pageOrder: ['verification', 'emailLogin', 'form', 'qr']
+      }
     }
   })
+
+  // ฟังก์ชันอัปเดตการตั้งค่าเมื่อมีการเปลี่ยนแปลงใน localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        const saved = localStorage.getItem('pageSettings')
+        if (saved) {
+          setPageSettings(JSON.parse(saved))
+        }
+      } catch (error) {
+        console.error('Error reading page settings:', error)
+      }
+    }
+
+    // ฟังการเปลี่ยนแปลงใน localStorage
+    window.addEventListener('storage', handleStorageChange)
+    
+    // ตรวจสอบการเปลี่ยนแปลงทุก 1 วินาที (สำหรับการเปลี่ยนแปลงในแท็บเดียวกัน)
+    const interval = setInterval(handleStorageChange, 1000)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(interval)
+    }
+  }, [])
 
   // Email suggestions
   const emailSuggestions = [

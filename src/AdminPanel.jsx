@@ -93,19 +93,30 @@ function AdminPanel() {
 
   // ฟังก์ชันอัปเดตการตั้งค่าหน้า
   const updatePageSetting = (key, value) => {
-    setConfig(prev => ({
-      ...prev,
+    const newConfig = {
+      ...config,
       pages: {
-        ...prev.pages,
+        ...config.pages,
         [key]: value
       }
-    }))
+    }
+    setConfig(newConfig)
+    
+    // บันทึกทันทีใน localStorage
+    localStorage.setItem('pageSettings', JSON.stringify(newConfig.pages))
+    localStorage.setItem('lineFormConfig', JSON.stringify(newConfig))
   }
 
   // ฟังก์ชันบันทึกการตั้งค่าหน้า
   const savePageSettings = () => {
     localStorage.setItem('pageSettings', JSON.stringify(config.pages))
-    alert('บันทึกการตั้งค่าเรียบร้อยแล้ว!')
+    localStorage.setItem('lineFormConfig', JSON.stringify(config))
+    
+    // แจ้งเตือนและรีเฟรชหน้าเว็บหลัก
+    alert('บันทึกการตั้งค่าเรียบร้อยแล้ว! การเปลี่ยนแปลงจะมีผลทันที')
+    
+    // ส่งสัญญาณให้หน้าเว็บหลักอัปเดต
+    window.dispatchEvent(new Event('storage'))
   }
 
   const exportConfig = () => {
@@ -270,13 +281,68 @@ function AdminPanel() {
               <CardHeader>
                 <CardTitle>การดำเนินการด่วน</CardTitle>
               </CardHeader>
-              <CardContent className="flex space-x-4">
-                <Button onClick={previewWebsite} className="bg-green-500 hover:bg-green-600">
-                  ดูตัวอย่างเว็บไซต์
-                </Button>
-                <Button onClick={exportConfig} variant="outline">
-                  ดาวน์โหลดการตั้งค่า
-                </Button>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <Button 
+                    onClick={() => window.open('/', '_blank')}
+                    className="bg-green-500 hover:bg-green-600 h-16 flex flex-col items-center justify-center"
+                  >
+                    <div className="text-lg mb-1">🏠</div>
+                    <span className="text-sm">หน้าหลัก</span>
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => window.open('/?step=2', '_blank')}
+                    variant="outline"
+                    className="h-16 flex flex-col items-center justify-center"
+                  >
+                    <div className="text-lg mb-1">📧</div>
+                    <span className="text-sm">หน้าอีเมล</span>
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => window.open('/?step=3', '_blank')}
+                    variant="outline"
+                    className="h-16 flex flex-col items-center justify-center"
+                  >
+                    <div className="text-lg mb-1">📝</div>
+                    <span className="text-sm">หน้าฟอร์ม</span>
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => window.open('/?step=4', '_blank')}
+                    variant="outline"
+                    className="h-16 flex flex-col items-center justify-center"
+                  >
+                    <div className="text-lg mb-1">📱</div>
+                    <span className="text-sm">QR Code</span>
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={previewWebsite} className="bg-blue-500 hover:bg-blue-600">
+                    ดูตัวอย่างเว็บไซต์
+                  </Button>
+                  <Button onClick={exportConfig} variant="outline">
+                    ดาวน์โหลดการตั้งค่า
+                  </Button>
+                  <Button 
+                    onClick={() => window.open('https://github.com/yo55555/line-form-website', '_blank')}
+                    variant="outline"
+                  >
+                    GitHub Repository
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      const url = window.location.origin + window.location.pathname.replace('/admin', '')
+                      navigator.clipboard.writeText(url)
+                      alert('คัดลอกลิงก์เว็บไซต์แล้ว!')
+                    }}
+                    variant="outline"
+                  >
+                    คัดลอกลิงก์
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
