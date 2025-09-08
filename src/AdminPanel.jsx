@@ -5,7 +5,7 @@ import { Input } from './components/ui/input'
 import { Label } from './components/ui/label'
 import { Textarea } from './components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs'
-import { Settings, FileText, Palette, Database, Eye, LogOut } from 'lucide-react'
+import { Settings, FileText, Palette, Database, Eye, LogOut, Save, Check } from 'lucide-react'
 
 const AdminPanel = ({ onLogout }) => {
   const [config, setConfig] = useState({
@@ -39,10 +39,17 @@ const AdminPanel = ({ onLogout }) => {
     }
   })
 
+  const [saveStatus, setSaveStatus] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
   useEffect(() => {
     const savedConfig = localStorage.getItem('lineFormConfig')
     if (savedConfig) {
-      setConfig(JSON.parse(savedConfig))
+      try {
+        setConfig(JSON.parse(savedConfig))
+      } catch (error) {
+        console.error('Error loading config:', error)
+      }
     }
   }, [])
 
@@ -55,7 +62,29 @@ const AdminPanel = ({ onLogout }) => {
       }
     }
     setConfig(newConfig)
-    localStorage.setItem('lineFormConfig', JSON.stringify(newConfig))
+  }
+
+  const saveConfig = () => {
+    setIsLoading(true)
+    setSaveStatus('')
+    
+    try {
+      localStorage.setItem('lineFormConfig', JSON.stringify(config))
+      
+      // Trigger a custom event to notify the main website
+      window.dispatchEvent(new CustomEvent('configUpdated', { 
+        detail: config 
+      }))
+      
+      setSaveStatus('success')
+      setTimeout(() => setSaveStatus(''), 3000)
+    } catch (error) {
+      console.error('Error saving config:', error)
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus(''), 3000)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleLogout = () => {
@@ -434,20 +463,45 @@ const AdminPanel = ({ onLogout }) => {
                 {/* ปุ่มบันทึก */}
                 <div className="flex space-x-4">
                   <Button 
-                    onClick={() => {
-                      alert('บันทึกการตั้งค่าเรียบร้อย!')
-                    }}
-                    className="bg-green-500 hover:bg-green-600"
+                    onClick={saveConfig}
+                    disabled={isLoading}
+                    className={`${
+                      saveStatus === 'success' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-green-500 hover:bg-green-600'
+                    }`}
                   >
-                    บันทึกการเปลี่ยนแปลง
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        กำลังบันทึก...
+                      </>
+                    ) : saveStatus === 'success' ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        บันทึกสำเร็จ!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        บันทึกการเปลี่ยนแปลง
+                      </>
+                    )}
                   </Button>
                   <Button 
                     onClick={previewWebsite}
                     variant="outline"
                   >
+                    <Eye className="h-4 w-4 mr-2" />
                     ดูตัวอย่าง
                   </Button>
                 </div>
+                
+                {saveStatus === 'error' && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -565,20 +619,45 @@ const AdminPanel = ({ onLogout }) => {
 
                 <div className="flex space-x-4">
                   <Button 
-                    onClick={() => {
-                      alert('บันทึกธีมเรียบร้อย!')
-                    }}
-                    className="bg-green-500 hover:bg-green-600"
+                    onClick={saveConfig}
+                    disabled={isLoading}
+                    className={`${
+                      saveStatus === 'success' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-green-500 hover:bg-green-600'
+                    }`}
                   >
-                    บันทึกธีม
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        กำลังบันทึก...
+                      </>
+                    ) : saveStatus === 'success' ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        บันทึกสำเร็จ!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        บันทึกธีม
+                      </>
+                    )}
                   </Button>
                   <Button 
                     onClick={previewWebsite}
                     variant="outline"
                   >
+                    <Eye className="h-4 w-4 mr-2" />
                     ดูตัวอย่าง
                   </Button>
                 </div>
+                
+                {saveStatus === 'error' && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -747,20 +826,45 @@ const AdminPanel = ({ onLogout }) => {
 
                 <div className="flex space-x-4">
                   <Button 
-                    onClick={() => {
-                      alert('บันทึกการตั้งค่าหน้าเรียบร้อย!')
-                    }}
-                    className="bg-green-500 hover:bg-green-600"
+                    onClick={saveConfig}
+                    disabled={isLoading}
+                    className={`${
+                      saveStatus === 'success' 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-green-500 hover:bg-green-600'
+                    }`}
                   >
-                    บันทึกการตั้งค่า
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        กำลังบันทึก...
+                      </>
+                    ) : saveStatus === 'success' ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        บันทึกสำเร็จ!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        บันทึกการตั้งค่า
+                      </>
+                    )}
                   </Button>
                   <Button 
                     onClick={previewWebsite}
                     variant="outline"
                   >
+                    <Eye className="h-4 w-4 mr-2" />
                     ดูตัวอย่าง
                   </Button>
                 </div>
+                
+                {saveStatus === 'error' && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
